@@ -10,7 +10,7 @@ namespace PvPController
     public class Database
     {
         private MongoClient client;
-        private IMongoDatabase db;
+        private IMongoDatabase Db;
         private IMongoCollection<BsonDocument> WeaponCollection;
         private IMongoCollection<BsonDocument> ProjectileCollection;
         private IMongoCollection<BsonDocument> WeaponBuffCollection;
@@ -22,10 +22,10 @@ namespace PvPController
             var dbName = config.Database.DBName;
 
             client = new MongoClient($"mongodb://{host}:{port}");
-            db = client.GetDatabase(dbName);
-            WeaponCollection = db.GetCollection<BsonDocument>("weapons");
-            ProjectileCollection = db.GetCollection<BsonDocument>("projectiles");
-            WeaponBuffCollection = db.GetCollection<BsonDocument>("weaponbuffs");
+            Db = client.GetDatabase(dbName);
+            WeaponCollection = Db.GetCollection<BsonDocument>("weapons");
+            ProjectileCollection = Db.GetCollection<BsonDocument>("projectiles");
+            WeaponBuffCollection = Db.GetCollection<BsonDocument>("weaponbuffs");
         }
 
         public List<Weapon> GetWeapons()
