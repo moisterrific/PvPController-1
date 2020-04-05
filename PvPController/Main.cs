@@ -129,7 +129,7 @@ namespace PvPController
             Database = new Database(Config);
             Weapons = Database.GetWeapons();
             Projectiles = Database.GetProjectiles();
-            Database.addWeaponBuffs(Weapons);
+            Database.AddWeaponBuffs(Weapons);
         }
 
         /// <summary>

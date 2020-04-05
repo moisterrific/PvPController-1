@@ -11,9 +11,9 @@ namespace PvPController
     {
         private MongoClient client;
         private IMongoDatabase db;
-        private IMongoCollection<BsonDocument> weaponCollection;
-        private IMongoCollection<BsonDocument> projectileCollection;
-        private IMongoCollection<BsonDocument> weaponBuffCollection;
+        private IMongoCollection<BsonDocument> WeaponCollection;
+        private IMongoCollection<BsonDocument> ProjectileCollection;
+        private IMongoCollection<BsonDocument> WeaponBuffCollection;
 
         public Database(Config config)
         {
@@ -23,15 +23,15 @@ namespace PvPController
 
             client = new MongoClient($"mongodb://{host}:{port}");
             db = client.GetDatabase(dbName);
-            weaponCollection = db.GetCollection<BsonDocument>("weapons");
-            projectileCollection = db.GetCollection<BsonDocument>("projectiles");
-            weaponBuffCollection = db.GetCollection<BsonDocument>("weaponbuffs");
+            WeaponCollection = db.GetCollection<BsonDocument>("weapons");
+            ProjectileCollection = db.GetCollection<BsonDocument>("projectiles");
+            WeaponBuffCollection = db.GetCollection<BsonDocument>("weaponbuffs");
         }
 
         public List<Weapon> GetWeapons()
         {
             var weaponList = new List<Weapon>();
-            var cursor = weaponCollection.Find(new BsonDocument()).ToCursor();
+            var cursor = WeaponCollection.Find(new BsonDocument()).ToCursor();
             foreach (var item in cursor.ToEnumerable())
             {
                 var weapon = new Weapon(item["NetID"].AsInt32,
@@ -47,7 +47,7 @@ namespace PvPController
         public List<Projectile> GetProjectiles()
         {
             var projectileList = new List<Projectile>();
-            var cursor = projectileCollection.Find(new BsonDocument()).ToCursor();
+            var cursor = ProjectileCollection.Find(new BsonDocument()).ToCursor();
             foreach (var item in cursor.ToEnumerable())
             {
                 var projectile = new Projectile(item["NetID"].AsInt32,
@@ -65,9 +65,9 @@ namespace PvPController
         /// Gets the weapon buffs and adds them to the appropriate weapons in the weapons list
         /// </summary>
         /// <param name="weapons"></param>
-        public void addWeaponBuffs(List<Weapon> weapons)
+        public void AddWeaponBuffs(List<Weapon> weapons)
         {
-            var cursor = weaponBuffCollection.Find(new BsonDocument()).ToCursor();
+            var cursor = WeaponBuffCollection.Find(new BsonDocument()).ToCursor();
             foreach (var item in cursor.ToEnumerable())
             {
                 var buff = new Buff(Convert.ToInt32(item["NetID"]), Convert.ToInt32(item["Milliseconds"]));
