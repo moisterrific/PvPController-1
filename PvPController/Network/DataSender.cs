@@ -1,6 +1,7 @@
 ﻿using TShockAPI;
 using Terraria;
 using Terraria.Localization;
+using System;
 
 namespace PvPController
 {
@@ -44,12 +45,9 @@ namespace PvPController
         internal static void ForceServerItem(Player player, int slotId, Item newItem)
         {
             Item? item = Inventory.GetItem(player.TPlayer, slotId);
-            item.netDefaults(newItem.netID);
-            if (item.netID != 0)
-            {
-                Inventory.SetItem(player.TPlayer, slotId, newItem);
-                NetMessage.SendData(5, -1, -1, NetworkText.Empty, player.TPlayer.whoAmI, slotId, newItem.prefix, newItem.stack);
-            }
+            item?.netDefaults(newItem.netID);
+            // Inventory.SetItem(player.TPlayer, slotId, newItem);
+            NetMessage.SendData(5, -1, -1, NetworkText.Empty, player.TPlayer.whoAmI, slotId, newItem.prefix, newItem.stack);
         }
 
         /// <summary>
@@ -61,6 +59,7 @@ namespace PvPController
         {
             if (!TShock.ServerSideCharacterConfig.Enabled)
             {
+                Console.WriteLine($"Turning SSC {on}");
                 Main.ServerSideCharacter = on;
                 NetMessage.SendData((int)PacketTypes.WorldInfo, player.Index, -1, NetworkText.FromLiteral(""));
             }

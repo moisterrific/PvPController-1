@@ -160,9 +160,12 @@ namespace PvPController
             byte item = args.Data.ReadInt8();
             var pos = new Vector2(args.Data.ReadSingle(), args.Data.ReadSingle());
             var vel = Vector2.Zero;
+            StorageTypes.Weapon? weapon = null;
+            Controller.Weapons.TryGetValue(args.Player.TshockPlayer.SelectedItem.netID, out weapon);
+            bool isBanned = weapon?.banned ?? false;
             
             if (control[5]
-                && Controller.Weapons.Count(p => p.netID == args.Player.TshockPlayer.SelectedItem.netID && p.banned) > 0
+                && isBanned
                 && args.Player.TPlayer.hostile)
             {
                 args.Player.TellWeaponIsIneffective();
@@ -272,15 +275,15 @@ namespace PvPController
             // as sourceItemType is simply the active slot item
             // TODO: Change this to use active slot item of server
             Item weapon = new Item();
+            Item? bestWeaponGuess = args.Player.ProjectileWeapon[sourceProjectileType];
             if (sourceProjectileType == -1)
             {
                 weapon.SetDefaults(sourceItemType);
                 weapon.Prefix(sourceItemPrefix);
                 weapon.owner = args.Player.Index;
             }
-            else if (args.Player.ProjectileWeapon[sourceProjectileType] != null)
+            else if (bestWeaponGuess != null)
             {
-                Item bestWeaponGuess = args.Player.ProjectileWeapon[sourceProjectileType];
                 weapon.SetDefaults(bestWeaponGuess.netID);
                 weapon.Prefix(bestWeaponGuess.prefix);
                 weapon.owner = args.Player.Index;
@@ -288,8 +291,12 @@ namespace PvPController
             
             double internalDamage = Main.player[args.Player.Index].GetWeaponDamage(weapon);
 
+            StorageTypes.Weapon? modifiedWeapon = null;
+            Controller.Weapons.TryGetValue(weapon.netID, out modifiedWeapon);
+            bool modifiedWeaponIsBanned = modifiedWeapon?.banned ?? false;
+
             // Check whether the source of damage is banned
-            if (Controller.Weapons.Count(p => p.netID == weapon.netID && p.banned) > 0 || Controller.Projectiles.Count(p => p.netID == sourceProjectileType && p.banned) > 0)
+            if (modifiedWeaponIsBanned || Controller.Projectiles.Count(p => p.netID == sourceProjectileType && p.banned) > 0)
             {
                 args.Player.TshockPlayer.SendData(PacketTypes.PlayerHp, "", playerId);
                 return true;

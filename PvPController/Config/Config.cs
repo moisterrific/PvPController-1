@@ -22,7 +22,7 @@ namespace PvPController
         public ArmorBuffDefense SolarArmorStages;
         public bool ForceMaxHealth;
 
-        public Config(string path = null)
+        public Config(string? path = null)
         {
             if (path != null)
             {

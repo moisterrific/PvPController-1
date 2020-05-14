@@ -28,17 +28,32 @@ namespace PvPController
             WeaponBuffCollection = Db.GetCollection<BsonDocument>("weaponbuffs");
         }
 
-        public List<Weapon> GetWeapons()
+        public Dictionary<int, Weapon> GetWeapons()
         {
-            var weaponList = new List<Weapon>();
+            var weaponList = new Dictionary<int, Weapon>();
             var cursor = WeaponCollection.Find(new BsonDocument()).ToCursor();
             foreach (var item in cursor.ToEnumerable())
             {
-                var weapon = new Weapon(item["NetID"].AsInt32,
-                                        Convert.ToSingle(item["CurrentDamage"]) / Convert.ToSingle(item["BaseDamage"]),
-                                        Convert.ToSingle(item["CurrentVelocity"]) / Convert.ToSingle(item["BaseVelocity"]),
-                                        Convert.ToBoolean(item["Banned"]), item["MinDamage"].AsInt32, item["MaxDamage"].AsInt32);
-                weaponList.Add(weapon);
+                var netID = item["NetID"].AsInt32;
+                var weapon = new Weapon
+                {
+                    netID = netID,
+                    damageRatio = Convert.ToSingle(item["CurrentDamage"]) / Convert.ToSingle(item["BaseDamage"]),
+                    velocityRatio = Convert.ToSingle(item["CurrentVelocity"]) / Convert.ToSingle(item["BaseVelocity"]),
+                    banned = Convert.ToBoolean(item["Banned"]),
+                    currentVelocity = Convert.ToSingle(item["CurrentVelocity"]),
+                    baseVelocity = Convert.ToSingle(item["BaseVelocity"]),
+                    currentDamage = Convert.ToSingle(item["CurrentDamage"]),
+                    baseDamage = Convert.ToSingle(item["BaseDamage"]),
+                    minDamage = Convert.ToSingle(item["MinDamage"]),
+                    maxDamage = Convert.ToSingle(item["MaxDamage"])
+                };
+
+                if (weaponList.ContainsKey(netID))
+                {
+                    Console.WriteLine($"NetID: {netID} already exists.");
+                }
+                weaponList.Add(netID, weapon);
             }
 
             return weaponList;
@@ -65,16 +80,17 @@ namespace PvPController
         /// Gets the weapon buffs and adds them to the appropriate weapons in the weapons list
         /// </summary>
         /// <param name="weapons"></param>
-        public void AddWeaponBuffs(List<Weapon> weapons)
+        public void AddWeaponBuffs(Dictionary<int, Weapon> weapons)
         {
             var cursor = WeaponBuffCollection.Find(new BsonDocument()).ToCursor();
             foreach (var item in cursor.ToEnumerable())
             {
                 var buff = new Buff(Convert.ToInt32(item["NetID"]), Convert.ToInt32(item["Milliseconds"]));
-                var weapon = weapons.FirstOrDefault(p => p.netID == Convert.ToInt32(item["WeaponNetID"]));
-                if (weapon != null)
+                var weaponNetID = item["WeaponNetID"].AsInt32;
+                var hasWeapon = weapons.ContainsKey(weaponNetID);
+                if (hasWeapon)
                 {
-                    weapon.buffs.Add(buff);
+                    weapons[weaponNetID].buffs.Add(buff);
                 }
             }
         }

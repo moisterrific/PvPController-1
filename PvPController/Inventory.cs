@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Terraria;
 using TShockAPI;
 
@@ -52,6 +53,11 @@ namespace PvPController
             }
 
             return item;
+        }
+
+        internal static Item? GetItem(IEnumerable<InventorySlot> inventory, int slotId)
+        {
+            return (inventory.FirstOrDefault(item => item.SlotIndex == slotId) as InventorySlot?)?.Item;
         }
 
         internal static void SetItem(Terraria.Player player, int slotId, Item item)

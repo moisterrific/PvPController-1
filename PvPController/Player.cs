@@ -30,14 +30,14 @@ namespace PvPController
         }
 
         // Tracks The last active bow weapon for the specified player index
-        public Item LastActiveBow
+        public Item? LastActiveBow
         {
             set;
             get;
         }
 
         // Tracks what weapon created what projectile for the specified projectile index
-        public Item[] ProjectileWeapon
+        public Item?[] ProjectileWeapon
         {
             private set;
             get;
@@ -222,13 +222,13 @@ namespace PvPController
                 return false;
             }
 
+            StorageTypes.Weapon? weaponModification = null;
+            Controller.Weapons.TryGetValue(weaponUsed.netID, out weaponModification);
             // Apply buffs to user if weapon buffs exist
-            if (Controller.Weapons.Count(p => p.netID == weaponUsed.netID && p.buffs.Count() > 0) > 0)
-            {
+            if (weaponModification.buffs.Count() > 0) {
                 if (proj.ranged && args.Damage > 0)
                 {
-                    var weapon = Controller.Weapons.FirstOrDefault(p => p.netID == TshockPlayer.SelectedItem.netID);
-                    var weaponBuffs = weapon.buffs;
+                    var weaponBuffs = weaponModification.buffs;
                     foreach (var weaponBuff in weaponBuffs)
                     {
                         TshockPlayer.SetBuff(weaponBuff.netID, Convert.ToInt32((weaponBuff.milliseconds / 1000f) * 60), true);
@@ -238,15 +238,9 @@ namespace PvPController
 
             // Load weapon modifications if this is a damaging projectile and the used weapon has modifications
             var modification = Controller.Projectiles.FirstOrDefault(p => p.netID == args.Type);
-            StorageTypes.Weapon weaponModification = null;
-            if (args.Damage > 0)
-            {
-                weaponModification = Controller.Weapons.FirstOrDefault(p => p.netID == TshockPlayer.SelectedItem.netID);    
-            }
-
 
             // Apply modifications and update if they exist
-            if ((modification != null && modification.velocityRatio != 1f) || (weaponModification != null && weaponModification.velocityRatio != 1f))
+            if (modification != null && modification.velocityRatio != 1f)
             {
                 int freeIndex = ProjectileUtils.FindFreeIndex();
 
@@ -259,10 +253,6 @@ namespace PvPController
                         velocity *= modification.velocityRatio;
                     }
 
-                    if (weaponModification != null)
-                    {
-                        velocity *= weaponModification.velocityRatio;
-                    }
                     proj.SetDefaults(args.Type);
                     proj.damage = args.Damage;
                     proj.active = true;

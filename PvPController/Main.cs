@@ -31,7 +31,7 @@ namespace PvPController
         public Database Database;
         private Synchroniser Synchroniser;
 
-        public List<Weapon> Weapons = new List<Weapon>();
+        public Dictionary<int, Weapon> Weapons = new Dictionary<int, Weapon>();
         public List<StorageTypes.Projectile> Projectiles = new List<StorageTypes.Projectile>();
         public List<EquipItem> EquipItems = new List<EquipItem>();
         public Player[] Players = new Player[256];
@@ -83,12 +83,14 @@ namespace PvPController
         public override void Initialize()
         {
             ServerApi.Hooks.NetGetData.Register(this, GetData);
+            ServerApi.Hooks.NetGreetPlayer.Register(this, ServerGreet);
             ServerApi.Hooks.ServerJoin.Register(this, ServerJoin);
             ServerApi.Hooks.ServerLeave.Register(this, ServerLeave);
             ServerApi.Hooks.ServerChat.Register(this, ServerChat);
             ServerApi.Hooks.NetSendData.Register(this, SendData);
             Commands.ChatCommands.Add(new Command("pvpcontroller.reload", Reload, "pvpcreload"));
             Commands.ChatCommands.Add(new Command("pvpcontroller.spectate", ToggleSpectate, "spectate"));
+            Commands.ChatCommands.Add(new Command("pvpcontroller.spectate", TestSync, "sync"));
             SetupConfig();
 
             foreach (var netID in Config.BannedArmorPieces)
@@ -142,12 +144,18 @@ namespace PvPController
             OnSecondUpdate.Elapsed += SecondUpdate;
         }
 
+        private void ServerGreet(GreetPlayerEventArgs args)
+        {
+            Console.WriteLine("Greet");
+        }
+
         /// <summary>
         /// Initializes a new player object when someone joins
         /// </summary>
         /// <param name="args"></param>
         private void ServerJoin(JoinEventArgs args)
         {
+            Console.WriteLine("Join");
             Players[args.Who] = new Player(TShock.Players[args.Who], this);
             Players[args.Who].IsDead = true;
 
@@ -214,6 +222,11 @@ namespace PvPController
         internal void RaisePlayerDamageEvent(object sender, PlayerDamageEventArgs args)
         {
             OnPlayerDamage?.Invoke(sender, args);
+        }
+
+        private void TestSync(CommandArgs args)
+        {
+            ModifiedInventorySync.ForceModifications(Players[args.Player.Index], Weapons);
         }
 
         /// <summary>

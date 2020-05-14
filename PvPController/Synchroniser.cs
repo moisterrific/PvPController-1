@@ -63,9 +63,10 @@ namespace PvPController
         {
             string changeType = update.changeType;
             int netID = update.netID;
-            var weapon = Controller.Weapons.FirstOrDefault(p => p.netID == netID);
+            StorageTypes.Weapon? weapon = null;
+            Controller.Weapons.TryGetValue(netID, out weapon);
 
-            /* The weapon was not found in the list, therefore it cannot be used
+            /* The weapon was not found in the dictionary, therefore it cannot be used
                 * since we do not have the other values of the object.*/
             if (weapon == null)
             {
